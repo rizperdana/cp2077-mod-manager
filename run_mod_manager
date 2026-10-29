@@ -1,0 +1,96 @@
+#!/bin/bash
+# Get script directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
+
+# Define required Cyberpunk 2077 folders
+CP2077_FOLDERS=(
+    "archive/pc/content"
+    "archive/pc/ep1"
+    "archive/pc/mod"
+    "bin/x64"
+    "bin/x64/plugins"
+    "bin/x64/plugins/cyber_engine_tweaks"
+    "bin/x64/plugins/cyber_engine_tweaks/fonts"
+    "bin/x64/plugins/cyber_engine_tweaks/mods"
+    "bin/x64/plugins/cyber_engine_tweaks/scripts"
+    "bin/x64/plugins/cyber_engine_tweaks/tweakdb"
+    "bin/x64/plugins/address_library"
+    "bin/x64/d3d12on7"
+    "bin/x64/D3D12"
+    "bin/x64/CrashReporter"
+    "engine/config/base"
+    "engine/config/galaxy/pc"
+    "engine/config/platform/pc"
+    "engine/tools"
+    "mods"
+    "r6"
+    "red4ext"
+    "tools/redmod"
+)
+
+# Function to find CP2077 installation
+find_cp2077_dir() {
+    # Common installation paths
+    local SEARCH_PATHS=(
+        "$HOME/.steam/steam/steamapps/common/Cyberpunk 2077"
+        "$HOME/.local/share/Steam/steamapps/common/Cyberpunk 2077"
+        "/mnt/c/Program Files (x86)/Steam/steamapps/common/Cyberpunk 2077"
+        "/mnt/c/GOG Games/Cyberpunk 2077"
+        "$SCRIPT_DIR"
+    )
+
+    for path in "${SEARCH_PATHS[@]}"; do
+        if [ -d "$path" ] && [ -f "$path/bin/x64/Cyberpunk2077.exe" ]; then
+            echo "$path"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+# Find or prompt for CP2077 directory
+echo "Searching for Cyberpunk 2077 installation..."
+CP2077_DIR=$(find_cp2077_dir)
+
+if [ -z "$CP2077_DIR" ]; then
+    echo "Cyberpunk 2077 installation not found automatically."
+    echo "Please enter the full path to your Cyberpunk 2077 installation:"
+    read -r CP2077_DIR
+
+    if [ ! -d "$CP2077_DIR" ]; then
+        echo "Error: Directory does not exist: $CP2077_DIR"
+        exit 1
+    fi
+fi
+
+echo "Using Cyberpunk 2077 directory: $CP2077_DIR"
+
+# Create missing folders
+echo "Checking and creating required folders..."
+CREATED_COUNT=0
+for folder in "${CP2077_FOLDERS[@]}"; do
+    FULL_PATH="$CP2077_DIR/$folder"
+    if [ ! -d "$FULL_PATH" ]; then
+        echo "Creating: $folder"
+        mkdir -p "$FULL_PATH"
+        CREATED_COUNT=$((CREATED_COUNT + 1))
+    fi
+done
+
+if [ $CREATED_COUNT -eq 0 ]; then
+    echo "All required folders already exist."
+else
+    echo "Created $CREATED_COUNT folder(s)."
+fi
+
+# Check if venv exists
+if [ ! -d "venv" ]; then
+    echo "Virtual environment not found. Running setup..."
+    ./setup.sh
+fi
+
+# Activate virtual environment and run
+source venv/bin/activate
+python3 cp2077_mod_manager.py "$CP2077_DIR"
