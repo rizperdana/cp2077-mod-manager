@@ -5,4 +5,4 @@ __pycache__/
 .DS_Store
 mods.json.bak
 *.tmp
-PY
+.pytest_cache/

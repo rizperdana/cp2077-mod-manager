@@ -59,4 +59,3 @@ python3 cp2077_mod_manager.py enable 'Mod Name'
 
 ## Mod install order
 RED4ext → redscript → CET → ArchiveXL → TweakXL → Codeware → Equipment-EX/Virtual Atelier → others.
-PY

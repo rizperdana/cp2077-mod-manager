@@ -96,14 +96,15 @@ def count_plugins(gp):
     if not L:
         return 0, []
     text = L.read_text(encoding="utf-8", errors="replace")
-    plugins = re.findall(r"has been loaded", text)
-    names = re.findall(r"red4ext\\\\plugins\\\\([^\\\\]+)\\\\", text)
-    # unique preserve order
+    # Derive plugin list from "Loading plugin from" lines; count unique plugin
+    # dir names (single backslash or slash separators in the Windows log path).
+    loaded_dirs = re.findall(r"plugins[/\\]([^/\\]+)[/\\]", text)
     seen = set(); uniq = []
-    for n in names:
+    for n in loaded_dirs:
         if n not in seen:
             seen.add(n); uniq.append(n)
-    return len(plugins), uniq
+    loaded = len(re.findall(r"has been loaded", text))
+    return loaded, uniq
 
 def redscript_result(gp):
     p = redscript_log(gp)
@@ -391,4 +392,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-PY
