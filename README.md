@@ -1,41 +1,42 @@
-# cp2077-mod-manager
+# cpmm
 
-Linux mod manager for Cyberpunk 2077, built for Wine/Heroic installs. PyQt6 GUI
-plus a stdlib-only web dashboard (`monitor.py`) and a headless CLI.
-
-## Features
-- Install/uninstall mods from archives or folders, FOMOD support.
-- Mod load ordering, framework-first install order.
-- Atomic state persistence (`mods.json`) with `.bak` backup.
-- `monitor.py`: health checks, framework/log status, untracked-content scan.
-- Headless CLI: `list`, `verify`, `enable`, `disable`.
+Single-file, stdlib-only Cyberpunk 2077 mod manager for Linux (Wine/Heroic
+installs). Interactive TUI plus scriptable CLI. No pip dependencies.
 
 ## Requirements
 - Python 3.10+
-- PyQt6 (GUI)
-- Optional: py7zr, rarfile (archive support)
+- Optional: `p7zip` (`7z`) and `unrar` binaries for .7z/.rar archives
+  (zip needs nothing extra)
 
 ## Install
 ```
-git clone <repo> && cd cp2077-mod-manager
+git clone https://github.com/rizperdana/cp2077-mod-manager.git
+cd cp2077-mod-manager
 ./setup.sh
-./run_mod_manager
 ```
 
-## Monitor
+## Usage
 ```
-python3 monitor.py --game <gamedir> --port 8765
-python3 monitor.py --check
+python3 cpmm.py                 # interactive TUI (also: cpmm tui)
+cpmm detect                     # find game dir, save to settings
+cpmm set --game '<gamedir>'     # override game dir
+cpmm list                       # all mods, grouped by category
+cpmm list --category misc       # filter
+cpmm meta 'CET 1.38.1'          # full record: files, sizes, status
+cpmm install mod.zip --category gameplay   # zip / .7z / .rar / folder
+cpmm uninstall 'Mod Name' -y    # -y skips confirm
+cpmm disable 'Mod Name'         # moves files to <game>/mods/_disabled/
+cpmm enable 'Mod Name'          # restore exact paths
+cpmm category 'Mod Name' romance
+cpmm check                      # frameworks, plugins, compile, integrity
 ```
-Screenshot placeholder: `docs/screenshot.png`
 
-## CLI examples
-```
-python3 cp2077_mod_manager.py list --game '<gamedir>'
-python3 cp2077_mod_manager.py verify --game '<gamedir>'
-python3 cp2077_mod_manager.py disable 'Mod Name'
-python3 cp2077_mod_manager.py enable 'Mod Name'
-```
+CLI mode works fully headless; `check` exits 0 when healthy, 1 on problems.
+
+## State
+`~/.local/share/cp2077-mod-manager/mods.json` (atomic writes, `.bak` backup)
+plus `settings.json` (game path, overwrite_files). Override the state dir for
+tests with `CPMM_STATE_DIR`; override the game dir with `CP2077_GAME`.
 
 ## Wine/Heroic notes
 - Launch game with `-modded`.
