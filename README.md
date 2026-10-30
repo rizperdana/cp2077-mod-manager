@@ -60,3 +60,13 @@ tests with `CPMM_STATE_DIR`; override the game dir with `CP2077_GAME`.
 
 ## Mod install order
 RED4ext → redscript → CET → ArchiveXL → TweakXL → Codeware → Equipment-EX/Virtual Atelier → others.
+
+## Nexus Mods integration
+Free (non-premium) accounts can still download Nexus files through the
+`nexus-mcp-plus` MCP server (search/download); `cpmm install <file.zip>` does
+the in-game install afterwards. The flow mints a short-lived `nxm://` link
+using your logged-in browser session cookie, then resolves the CDN mirror.
+See [docs/NEXUS_FREE_DOWNLOAD.md](docs/NEXUS_FREE_DOWNLOAD.md) for the runbook
+and MCP client config. Run `--check` once after logging into nexusmods.com in
+Firefox (profile `3buotdx0.default-release`) to confirm the session is detected
+before downloading. Premium is required only for automated API-only downloads.

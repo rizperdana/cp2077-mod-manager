@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nexus-mcp-plus"
+version = "1.0.0"
+description = "Nexus Mods MCP wrapper: upstream 140 tools + free-account nxm mint/download"
+requires-python = ">=3.11"
+dependencies = [
+    "nexus-mods-mcp==1.4.1",
+    "browser_cookie3",
+    "curl_cffi",
+]
+
+[project.scripts]
+nexus-mcp-plus = "nexus_mcp_plus.server:main"
+
+[tool.setuptools]
+packages = ["nexus_mcp_plus"]
+
+[tool.setuptools.package-dir]
+"" = ".."
