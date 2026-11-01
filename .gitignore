@@ -6,3 +6,7 @@ __pycache__/
 mods.json.bak
 *.tmp
 .pytest_cache/
+# owner's private installed-mod setup — local only, never commit/push
+docs/private/
+mods.json
+*~

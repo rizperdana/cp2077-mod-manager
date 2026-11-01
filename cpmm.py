@@ -488,6 +488,20 @@ def _collect_files(root):
             out.append(p.relative_to(root).as_posix())
     return out
 
+# ponytail: root-level docs/previews in a mod zip are never game assets; extend only if one ships a real root-level asset
+_ROOT_JUNK_SUFFIXES = (".txt", ".md", ".pdf", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".url", ".nfo", ".csv")
+
+
+def _is_root_junk(rel):
+    return "/" not in rel and rel.lower().endswith(_ROOT_JUNK_SUFFIXES)
+
+
+def _flat_dest(rel):
+    # ponytail: root-level .archive/.xl in a flat (no-dir) zip belongs in archive/pc/mod/
+    if "/" not in rel and rel.lower().endswith((".archive", ".xl")):
+        return "archive/pc/mod/" + rel
+    return rel
+
 
 def do_install(src, category, game):
     src = Path(src).expanduser()
@@ -516,7 +530,10 @@ def do_install(src, category, game):
         # copy files
         overwrite = load_settings().get("overwrite_files", True)
         for rel in rels:
-            dest = game / rel
+            if _is_root_junk(rel):
+                continue
+            dest_rel = _flat_dest(rel)
+            dest = game / dest_rel
             if dest.exists() and not overwrite:
                 raise ValueError(f"file exists (overwrite disabled): {rel}")
             dest.parent.mkdir(parents=True, exist_ok=True)
@@ -526,13 +543,15 @@ def do_install(src, category, game):
             if isinstance(r.get("order"), int):
                 order = max(order, r["order"])
         order += 1
+        # ponytail: remap flat .archive/.xl to actual install path so uninstall finds them
+        rec_files = [_flat_dest(f) for f in rels if not _is_root_junk(f)]
         rec = {
             "name": name,
             "mod_id": name,
             "mod_type": mod_type,
             "installed_at": time.time(),
             "order": order,
-            "files": rels,
+            "files": rec_files,
             "archive_path": str(src),
             "category": category or "misc",
         }

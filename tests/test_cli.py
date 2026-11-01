@@ -171,5 +171,37 @@ class TestDummyCycle(unittest.TestCase):
             self.assertNotIn("dummy", r.stdout.lower())
 
 
+class TestFlatArchive(unittest.TestCase):
+    def test_flat_and_root_junk(self):
+        # flat zip: root .archive/.xl -> archive/pc/mod/, root junk (png/txt) skipped
+        with tempfile.TemporaryDirectory() as td:
+            base = Path(td)
+            game = _scratch_game(base)
+            state = base / "state"
+            state.mkdir()
+            # flat: foo.archive + foo.png at zip root
+            flat = base / "flat.zip"
+            with zipfile.ZipFile(flat, "w") as zf:
+                zf.writestr("foo.archive", b"a")
+                zf.writestr("foo.png", b"p")
+            env = {"CPMM_STATE_DIR": str(state), "CP2077_GAME": str(game)}
+            r = _run(["install", str(flat), "--category", "misc"], env_extra=env)
+            self.assertEqual(r.returncode, 0, r.stderr)
+            self.assertTrue((game / "archive/pc/mod/foo.archive").exists())
+            self.assertFalse((game / "foo.archive").exists())
+            self.assertFalse((game / "foo.png").exists())
+            self.assertFalse(list(game.rglob("*.png")))
+            # structured: archive/pc/mod/x.archive + root codes.txt (junk at root)
+            structured = base / "structured.zip"
+            with zipfile.ZipFile(structured, "w") as zf:
+                zf.writestr("archive/pc/mod/x.archive", b"a")
+                zf.writestr("codes.txt", b"t")
+            env2 = {"CPMM_STATE_DIR": str(state), "CP2077_GAME": str(game)}
+            r = _run(["install", str(structured), "--category", "misc"], env_extra=env2)
+            self.assertEqual(r.returncode, 0, r.stderr)
+            self.assertTrue((game / "archive/pc/mod/x.archive").exists())
+            self.assertFalse(list(game.rglob("codes.txt")))
+
+
 if __name__ == "__main__":
     unittest.main()
